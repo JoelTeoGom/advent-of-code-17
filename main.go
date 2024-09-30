@@ -61,15 +61,15 @@ func main() {
 	filename := "input.txt"
 	stats := Stats{}
 	readfile(&stats, &m, filename)
-
+	var posX, posY int
 	minHeat := 10000
-
+	var suma int
 	//algorithm
 
 	for {
 		currentPos := Coord{posX: 0, posY: 0}
-		suma := 0
-		
+		suma = 0
+
 		lastDirection := Direction{
 			up:    false,
 			down:  false,
@@ -87,45 +87,61 @@ func main() {
 		//algorithm start
 
 		for currentPos.posX != stats.end.posX && currentPos.posY != stats.end.posY {
-			
-			//select direction 
+
+			//select direction
 			var option int
 			random(&option)
 
-			posX, posY := 0, 0
+			posX, posY = 0, 0
+
 			switch option {
 			case 0:
-
-				if !lastDirection.down && count < 3{
+				if !lastDirection.down && stats.count < 3 {
 					currentDirection.up = true
 					posX = -1
-					
-					
-				} 
+				}
+
+				if !lastDirection.up {
+					stats.count++
+				}
 
 				break
 			case 1:
-				currentDirection.down = true
-				posX = +1
+				if !lastDirection.down && stats.count < 3 {
+					currentDirection.down = true
+					posX = +1
+				}
+
+				if !lastDirection.down {
+					stats.count++
+				}
 				break
 			case 2:
-				currentDirection.right = true
-				posY = +1
+				if !lastDirection.left && stats.count < 3 {
+					currentDirection.right = true
+					posY = +1
+				}
+
+				if !lastDirection.right {
+					stats.count++
+				}
+
 				break
 			case 3:
-				currentDirection.left = true
-				posY = -1
+				if !lastDirection.right && stats.count < 3 {
+					currentDirection.left = true
+					posY = -1
+				}
+
+				if !lastDirection.left {
+					stats.count++
+				}
 				break
 			}
 
-			//lets verifty if this is possible
+			if inRange(currentPos, posX, posY, stats.end.posX, stats.start.posY, m) {
 
-			
-
-
-
-			if currentPos.posX + posX && currentPos.posY + 1  
-
+			}
 
 		}
 
@@ -144,10 +160,11 @@ func random(option *int) {
 	}
 }
 
-func isValid(){
-
-	if currentPos.posX + posX && currentPos.posY + 1  {
-	
+func inRange(currentPos Coord, posX, posY, row, col int, m [][]string) bool {
+	x := currentPos.posX + posX
+	y := currentPos.posY + posY
+	if x > 0 && x <= row && y > 0 && y <= col && m[x][y] {
+		return true
 	}
-
+	return false
 }
