@@ -28,7 +28,7 @@ func readfile(stats *Stats, m *[][]string, filename string) {
 	}
 
 	defer file.Close()
-	var line string
+
 	scanner := bufio.NewScanner(file)
 
 	rows := 0
@@ -49,10 +49,10 @@ func readfile(stats *Stats, m *[][]string, filename string) {
 	}
 
 	*stats = Stats{
-		directions: make(map[string]Coord),                     // Inicializamos el mapa vacío
-		count:      0,                                          // Inicializamos el contador en 0
-		start:      Coord{posX: 0, posY: 0},                    // Coordenada de inicio (0, 0)
-		end:        Coord{posX: rows - 1, posY: len(line) - 1}, // Coordenada de fin (10, 10)
+		directions: make(map[string]Coord),             // Inicializamos el mapa vacío
+		count:      0,                                  // Inicializamos el contador en 0
+		start:      Coord{posX: 0, posY: 0},            // Coordenada de inicio (0, 0)
+		end:        Coord{posX: rows - 1, posY: i - 1}, // Coordenada de fin (10, 10)
 	}
 
 	stats.directions["^"] = Coord{posX: -1, posY: 0}
@@ -165,8 +165,8 @@ func isValid(currentPos Coord, stats Stats, symbol string, m [][]string) bool {
 	x := currentPos.posX + stats.directions[symbol].posX
 	y := currentPos.posY + stats.directions[symbol].posY
 	fmt.Println("[X, Y]: ", x, y)
-
-	if x >= 0 && x <= stats.end.posX && y >= 0 && y <= stats.start.posY {
+	fmt.Println(stats.end.posX, stats.end.posY)
+	if x >= 0 && x <= stats.end.posX && y >= 0 && y <= stats.end.posY {
 		if isNumber(m, x, y) {
 			fmt.Println("ISVALID")
 			fmt.Println("Matrix[x,y]: ", m[x][y])
