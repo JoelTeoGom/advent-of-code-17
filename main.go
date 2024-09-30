@@ -8,20 +8,15 @@ import (
 	"os"
 )
 
-const maxCount = 3
-
 type Stats struct {
-	count int
-	start Coord
-	end   Coord
+	directions map[string]Coord
+	count      int
+	start      Coord
+	end        Coord
 }
 
 type Coord struct {
 	posX, posY int
-}
-
-type Direction struct {
-	up, down, right, left bool
 }
 
 func readfile(stats *Stats, m *[][]string, filename string) {
@@ -35,22 +30,35 @@ func readfile(stats *Stats, m *[][]string, filename string) {
 	defer file.Close()
 	var line string
 	scanner := bufio.NewScanner(file)
-	var row int
-	for scanner.Scan() {
-		line = scanner.Text()
-		row = 0
-		*m = append(*m, make([]string, len(line)))
 
-		for _, char := range line {
-			if row < len(*m) {
-				(*m)[row] = append((*m)[row], string(char))
-			}
-			row++
+	rows := 0
+	var i int
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		//important
+		*m = append(*m, make([]string, len(line)))
+		i = 0
+		for col, char := range line {
+			(*m)[rows][col] = string(char)
+			i++
+
 		}
+
+		rows++
 	}
-	stats.count = 0
-	stats.end = Coord{posX: row - 1, posY: len(line) - 1}
-	stats.start = Coord{posX: 0, posY: 0}
+
+	*stats = Stats{
+		directions: make(map[string]Coord),                     // Inicializamos el mapa vacío
+		count:      0,                                          // Inicializamos el contador en 0
+		start:      Coord{posX: 0, posY: 0},                    // Coordenada de inicio (0, 0)
+		end:        Coord{posX: rows - 1, posY: len(line) - 1}, // Coordenada de fin (10, 10)
+	}
+
+	stats.directions["^"] = Coord{posX: -1, posY: 0}
+	stats.directions["v"] = Coord{posX: 1, posY: 0}
+	stats.directions[">"] = Coord{posX: 0, posY: 1}
+	stats.directions["<"] = Coord{posX: 0, posY: -1}
 
 	fmt.Println(stats)
 }
@@ -61,103 +69,152 @@ func main() {
 	filename := "input.txt"
 	stats := Stats{}
 	readfile(&stats, &m, filename)
-	var posX, posY int
-	minHeat := 10000
-	var suma int
+	for i := 0; i < len(m); i++ {
+		for j := 0; j < len(m[0]); j++ {
+			fmt.Printf("MATRIX[%d][%d]: %s\n", i, j, m[i][j])
+		}
+
+	}
+	path := make([]string, 1)
+	pathIndex := 1
+
+	var symbol string
+	//var posX, posY int
+	var block bool
+
+	// minHeat := 10000
+	// var suma int
+
 	//algorithm
 
 	for {
 		currentPos := Coord{posX: 0, posY: 0}
-		suma = 0
+		//	suma = 0
 
-		lastDirection := Direction{
-			up:    false,
-			down:  false,
-			right: false,
-			left:  false,
-		}
+		for currentPos.posX != stats.end.posX && currentPos.posY != stats.end.posY && !block {
+			random(&symbol)
+			fmt.Println(symbol)
+			switch symbol {
 
-		currentDirection := Direction{
-			up:    false,
-			down:  false,
-			right: false,
-			left:  false,
-		}
+			case "^":
+				fmt.Println("SYMBOL: ", symbol)
 
-		//algorithm start
-
-		for currentPos.posX != stats.end.posX && currentPos.posY != stats.end.posY {
-
-			//select direction
-			var option int
-			random(&option)
-
-			posX, posY = 0, 0
-
-			switch option {
-			case 0:
-
-				if !lastDirection.down && stats.count < 3 {
-					currentDirection.up = true
-					posX = -1
+				if path[pathIndex-1] != "v" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
+					fmt.Println("ENTRAAAA")
+					currentPos.posX += stats.directions[symbol].posX
+					currentPos.posY += stats.directions[symbol].posY
+					m[currentPos.posX][currentPos.posY] = symbol
+					path = append(path, symbol)
+					pathIndex++
 				}
 
-				break
-			case 1:
-				if !lastDirection.down && stats.count < 3 {
-					currentDirection.down = true
-					posX = +1
+			case "v":
+				fmt.Println("SYMBOL: ", symbol)
+				if path[pathIndex-1] != "^" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
+					fmt.Println("ENTRAAAA")
+
+					currentPos.posX += stats.directions[symbol].posX
+					currentPos.posY += stats.directions[symbol].posY
+					m[currentPos.posX][currentPos.posY] = symbol
+					path = append(path, symbol)
+					pathIndex++
 				}
 
-				if lastDirection.down {
-					stats.count++
-				}
-				break
-			case 2:
-				if !lastDirection.left && stats.count < 3 {
-					currentDirection.right = true
-					posY = +1
-				}
+			case ">":
+				fmt.Println("SYMBOL: ", symbol)
 
-				if lastDirection.right {
-					stats.count++
-				}
+				if path[pathIndex-1] != "<" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
+					fmt.Println("ENTRAAAA")
 
-				break
-			case 3:
-				if !lastDirection.right && stats.count < 3 {
-					currentDirection.left = true
-					posY = -1
+					currentPos.posX += stats.directions[symbol].posX
+					currentPos.posY += stats.directions[symbol].posY
+					m[currentPos.posX][currentPos.posY] = symbol
+					path = append(path, symbol)
+					pathIndex++
 				}
+			case "<":
+				fmt.Println("SYMBOL: ", symbol)
 
-				if lastDirection.left {
-					stats.count++
+				if path[pathIndex-1] != ">" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
+					fmt.Println("ENTRAAAA")
+
+					currentPos.posX += stats.directions[symbol].posX
+					currentPos.posY += stats.directions[symbol].posY
+					m[currentPos.posX][currentPos.posY] = symbol
+					path = append(path, symbol)
+					pathIndex++
 				}
-				break
+			default:
+				fmt.Println("Símbolo no reconocido") // Caso por defecto si no coincide ningún símbolo
 			}
 
-		}
+			for i, char := range path {
 
+				fmt.Printf("path[%d]: %s   ", i, char)
+
+			}
+
+			fmt.Println("\n=============================================")
+
+		}
 	}
 
 }
 
-func random(option *int) {
+func isValid(currentPos Coord, stats Stats, symbol string, m [][]string) bool {
+	x := currentPos.posX + stats.directions[symbol].posX
+	y := currentPos.posY + stats.directions[symbol].posY
+	fmt.Println("[X, Y]: ", x, y)
+
+	if x >= 0 && x <= stats.end.posX && y >= 0 && y <= stats.start.posY {
+		if isNumber(m, x, y) {
+			fmt.Println("ISVALID")
+			fmt.Println("Matrix[x,y]: ", m[x][y])
+			return true
+		}
+
+	}
+	fmt.Println("IS_NOT_VALID")
+
+	return false
+}
+
+func isNumber(m [][]string, x, y int) bool {
+
+	if m[x][y] < "0" || m[x][y] > "9" {
+		return false
+	}
+
+	fmt.Println("isNUMBER")
+
+	return true
+
+}
+
+func count(path []string, symbol string, index int) int {
+	count := 0
+	for i := index - 1; i > 0; i-- {
+		if path[i] != symbol {
+			break
+		}
+		count++
+	}
+
+	fmt.Println("count: ", count)
+	return count
+}
+
+func random(symbol *string) {
 	// Generate a random number between 0 and 3
+	symbols := [4]string{"<", ">", "^", "v"}
 	rangeSize := big.NewInt(4)
 	n, err := rand.Int(rand.Reader, rangeSize)
-	*option = int(n.Int64())
+	option := int(n.Int64())
 	if err != nil {
 		fmt.Println("Error generating random number:", err)
 		return
 	}
-}
 
-func inRange(currentPos Coord, posX, posY, row, col int, m [][]string) bool {
-	x := currentPos.posX + posX
-	y := currentPos.posY + posY
-	if x > 0 && x <= row && y > 0 && y <= col && m[x][y] != "X" {
-		return true
-	}
-	return false
+	*symbol = symbols[option]
+
 }
