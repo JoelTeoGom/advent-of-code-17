@@ -66,6 +66,7 @@ func readfile(stats *Stats, m *[][]string, filename string) {
 func main() {
 
 	m := make([][]string, 0)
+
 	filename := "input.txt"
 	stats := Stats{}
 	readfile(&stats, &m, filename)
@@ -87,78 +88,126 @@ func main() {
 
 	//algorithm
 
-	for {
-		currentPos := Coord{posX: 0, posY: 0}
-		//	suma = 0
+	// for {
+	currentPos := Coord{posX: 0, posY: 0}
+	block = false
+	//suma = 0
+	for currentPos.posX != stats.end.posX && currentPos.posY != stats.end.posY && !block {
+		random(&symbol)
+		fmt.Println(symbol)
+		switch symbol {
 
-		for currentPos.posX != stats.end.posX && currentPos.posY != stats.end.posY && !block {
-			random(&symbol)
-			fmt.Println(symbol)
-			switch symbol {
+		case "^":
+			fmt.Println("SYMBOL: ", symbol)
 
-			case "^":
-				fmt.Println("SYMBOL: ", symbol)
-
-				if path[pathIndex-1] != "v" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
-					fmt.Println("ENTRAAAA")
-					currentPos.posX += stats.directions[symbol].posX
-					currentPos.posY += stats.directions[symbol].posY
-					m[currentPos.posX][currentPos.posY] = symbol
-					path = append(path, symbol)
-					pathIndex++
-				}
-
-			case "v":
-				fmt.Println("SYMBOL: ", symbol)
-				if path[pathIndex-1] != "^" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
-					fmt.Println("ENTRAAAA")
-
-					currentPos.posX += stats.directions[symbol].posX
-					currentPos.posY += stats.directions[symbol].posY
-					m[currentPos.posX][currentPos.posY] = symbol
-					path = append(path, symbol)
-					pathIndex++
-				}
-
-			case ">":
-				fmt.Println("SYMBOL: ", symbol)
-
-				if path[pathIndex-1] != "<" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
-					fmt.Println("ENTRAAAA")
-
-					currentPos.posX += stats.directions[symbol].posX
-					currentPos.posY += stats.directions[symbol].posY
-					m[currentPos.posX][currentPos.posY] = symbol
-					path = append(path, symbol)
-					pathIndex++
-				}
-			case "<":
-				fmt.Println("SYMBOL: ", symbol)
-
-				if path[pathIndex-1] != ">" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
-					fmt.Println("ENTRAAAA")
-
-					currentPos.posX += stats.directions[symbol].posX
-					currentPos.posY += stats.directions[symbol].posY
-					m[currentPos.posX][currentPos.posY] = symbol
-					path = append(path, symbol)
-					pathIndex++
-				}
-			default:
-				fmt.Println("Símbolo no reconocido") // Caso por defecto si no coincide ningún símbolo
+			if path[pathIndex-1] != "v" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
+				fmt.Println("ENTRAAAA")
+				currentPos.posX += stats.directions[symbol].posX
+				currentPos.posY += stats.directions[symbol].posY
+				m[currentPos.posX][currentPos.posY] = symbol
+				path = append(path, symbol)
+				pathIndex++
 			}
 
-			for i, char := range path {
+		case "v":
+			fmt.Println("SYMBOL: ", symbol)
+			if path[pathIndex-1] != "^" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
+				fmt.Println("ENTRAAAA")
 
-				fmt.Printf("path[%d]: %s   ", i, char)
-
+				currentPos.posX += stats.directions[symbol].posX
+				currentPos.posY += stats.directions[symbol].posY
+				m[currentPos.posX][currentPos.posY] = symbol
+				path = append(path, symbol)
+				pathIndex++
 			}
 
-			fmt.Println("\n=============================================")
+		case ">":
+			fmt.Println("SYMBOL: ", symbol)
+
+			if path[pathIndex-1] != "<" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
+				fmt.Println("ENTRAAAA")
+
+				currentPos.posX += stats.directions[symbol].posX
+				currentPos.posY += stats.directions[symbol].posY
+				m[currentPos.posX][currentPos.posY] = symbol
+				path = append(path, symbol)
+				pathIndex++
+			}
+		case "<":
+			fmt.Println("SYMBOL: ", symbol)
+
+			if path[pathIndex-1] != ">" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
+				fmt.Println("ENTRAAAA")
+
+				currentPos.posX += stats.directions[symbol].posX
+				currentPos.posY += stats.directions[symbol].posY
+				m[currentPos.posX][currentPos.posY] = symbol
+				path = append(path, symbol)
+				pathIndex++
+			}
+		default:
+			fmt.Println("Símbolo no reconocido") // Caso por defecto si no coincide ningún símbolo
+		}
+
+		for i, char := range path {
+
+			fmt.Printf("path[%d]: %s   ", i, char)
 
 		}
+
+		fmt.Println("\n=============================================")
+
+		block = isblock(m, currentPos)
+		if !block {
+			fmt.Println("A LA VERGA ")
+		}
+
 	}
 
+}
+
+func isblock(m [][]string, currentPos Coord) bool {
+	x, y := currentPos.posX, currentPos.posY
+	rows := len(m)
+	cols := len(m[0])
+
+	// Función auxiliar para verificar si una coordenada está dentro de los límites de la matriz
+	isValid := func(x, y int) bool {
+		return x >= 0 && x < rows && y >= 0 && y < cols
+	}
+
+	// Función auxiliar para comprobar si una celda contiene un número
+	isNumber := func(s string) bool {
+		if len(s) != 1 {
+			return false
+		}
+		return s >= "0" && s <= "9"
+	}
+
+	// Verificar las posiciones adyacentes (arriba, abajo, izquierda, derecha)
+
+	// Arriba
+	if isValid(x-1, y) && isNumber(m[x-1][y]) {
+		return false
+	}
+
+	// Abajo
+	if isValid(x+1, y) && isNumber(m[x+1][y]) {
+		return false
+	}
+
+	// Izquierda
+	if isValid(x, y-1) && isNumber(m[x][y-1]) {
+		return false
+	}
+
+	// Derecha
+	if isValid(x, y+1) && isNumber(m[x][y+1]) {
+		return false
+	}
+
+	// Si todas las posiciones adyacentes no contienen números o están fuera de los límites, está bloqueado
+	return true
 }
 
 func isValid(currentPos Coord, stats Stats, symbol string, m [][]string) bool {
