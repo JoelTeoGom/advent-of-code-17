@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"strconv"
 )
 
 type Stats struct {
@@ -64,106 +65,131 @@ func readfile(stats *Stats, m *[][]string, filename string) {
 }
 
 func main() {
-
-	m := make([][]string, 0)
-
 	filename := "input.txt"
+	m := make([][]string, 0)
 	stats := Stats{}
-	readfile(&stats, &m, filename)
-	for i := 0; i < len(m); i++ {
-		for j := 0; j < len(m[0]); j++ {
-			fmt.Printf("MATRIX[%d][%d]: %s\n", i, j, m[i][j])
-		}
 
+	readfile(&stats, &m, filename)
+
+	//clonando la matriz
+	temporal := make([][]string, len(m))
+	for i := range m {
+		temporal[i] = make([]string, len(m[i]))
+		copy(temporal[i], m[i])
 	}
+
 	path := make([]string, 1)
 	pathIndex := 1
 
 	var symbol string
-	//var posX, posY int
-	var block bool
+	var block, end bool
 
-	// minHeat := 10000
-	// var suma int
+	minHeat := 10000000000
+	var suma, number int
 
 	//algorithm
 
-	// for {
-	currentPos := Coord{posX: 0, posY: 0}
-	block = false
-	//suma = 0
-	for currentPos.posX != stats.end.posX && currentPos.posY != stats.end.posY && !block {
-		random(&symbol)
-		fmt.Println(symbol)
-		switch symbol {
+	for {
 
-		case "^":
-			fmt.Println("SYMBOL: ", symbol)
+		//reset
+		currentPos := Coord{posX: 0, posY: 0}
+		block, end = false, false
+		suma = 0
 
-			if path[pathIndex-1] != "v" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
-				fmt.Println("ENTRAAAA")
-				currentPos.posX += stats.directions[symbol].posX
-				currentPos.posY += stats.directions[symbol].posY
-				m[currentPos.posX][currentPos.posY] = symbol
-				path = append(path, symbol)
-				pathIndex++
-			}
-
-		case "v":
-			fmt.Println("SYMBOL: ", symbol)
-			if path[pathIndex-1] != "^" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
-				fmt.Println("ENTRAAAA")
-
-				currentPos.posX += stats.directions[symbol].posX
-				currentPos.posY += stats.directions[symbol].posY
-				m[currentPos.posX][currentPos.posY] = symbol
-				path = append(path, symbol)
-				pathIndex++
-			}
-
-		case ">":
-			fmt.Println("SYMBOL: ", symbol)
-
-			if path[pathIndex-1] != "<" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
-				fmt.Println("ENTRAAAA")
-
-				currentPos.posX += stats.directions[symbol].posX
-				currentPos.posY += stats.directions[symbol].posY
-				m[currentPos.posX][currentPos.posY] = symbol
-				path = append(path, symbol)
-				pathIndex++
-			}
-		case "<":
-			fmt.Println("SYMBOL: ", symbol)
-
-			if path[pathIndex-1] != ">" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
-				fmt.Println("ENTRAAAA")
-
-				currentPos.posX += stats.directions[symbol].posX
-				currentPos.posY += stats.directions[symbol].posY
-				m[currentPos.posX][currentPos.posY] = symbol
-				path = append(path, symbol)
-				pathIndex++
-			}
-		default:
-			fmt.Println("Símbolo no reconocido") // Caso por defecto si no coincide ningún símbolo
+		for i := range temporal {
+			copy(m[i], temporal[i])
 		}
 
-		for i, char := range path {
+		for !end && !block {
+			random(&symbol)
+			//fmt.Println(symbol)
+			switch symbol {
 
-			fmt.Printf("path[%d]: %s   ", i, char)
+			case "^":
+				//fmt.Println("SYMBOL: ", symbol)
+
+				if path[pathIndex-1] != "v" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
+					//	fmt.Println("ENTRAAAA")
+					currentPos.posX += stats.directions[symbol].posX
+					currentPos.posY += stats.directions[symbol].posY
+					number, _ = strconv.Atoi(m[currentPos.posX][currentPos.posY])
+					suma += number
+					m[currentPos.posX][currentPos.posY] = symbol
+					path = append(path, symbol)
+					pathIndex++
+				}
+
+			case "v":
+				//fmt.Println("SYMBOL: ", symbol)
+				if path[pathIndex-1] != "^" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
+					//	fmt.Println("ENTRAAAA")
+
+					currentPos.posX += stats.directions[symbol].posX
+					currentPos.posY += stats.directions[symbol].posY
+
+					number, _ = strconv.Atoi(m[currentPos.posX][currentPos.posY])
+					suma += number
+					m[currentPos.posX][currentPos.posY] = symbol
+					path = append(path, symbol)
+					pathIndex++
+				}
+
+			case ">":
+				//fmt.Println("SYMBOL: ", symbol)
+
+				if path[pathIndex-1] != "<" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
+					//fmt.Println("ENTRAAAA")
+
+					currentPos.posX += stats.directions[symbol].posX
+					currentPos.posY += stats.directions[symbol].posY
+
+					number, _ = strconv.Atoi(m[currentPos.posX][currentPos.posY])
+					suma += number
+					m[currentPos.posX][currentPos.posY] = symbol
+					path = append(path, symbol)
+					pathIndex++
+				}
+			case "<":
+				//fmt.Println("SYMBOL: ", symbol)
+
+				if path[pathIndex-1] != ">" && count(path, symbol, pathIndex) < 3 && isValid(currentPos, stats, symbol, m) {
+					//fmt.Println("ENTRAAAA")
+
+					currentPos.posX += stats.directions[symbol].posX
+					currentPos.posY += stats.directions[symbol].posY
+
+					number, _ = strconv.Atoi(m[currentPos.posX][currentPos.posY])
+					suma += number
+					m[currentPos.posX][currentPos.posY] = symbol
+					path = append(path, symbol)
+					pathIndex++
+				}
+			default:
+				fmt.Println("Símbolo no reconocido") // Caso por defecto si no coincide ningún símbolo
+			}
+
+			block = isblock(m, currentPos)
+
+			if currentPos.posX == stats.end.posX && currentPos.posY == stats.end.posY {
+
+				if suma < minHeat {
+					minHeat = suma
+				}
+
+				end = true
+			}
 
 		}
+		// for i := 0; i < len(m); i++ {
+		// 	for j := 0; j < len(m); j++ {
+		// 		fmt.Printf("%s", m[i][j])
+		// 	}
+		// 	fmt.Println()
+		// }
 
-		fmt.Println("\n=============================================")
-
-		block = isblock(m, currentPos)
-		if !block {
-			fmt.Println("A LA VERGA ")
-		}
+		fmt.Println("SUMA: ", minHeat)
 
 	}
-
 }
 
 func isblock(m [][]string, currentPos Coord) bool {
@@ -213,17 +239,17 @@ func isblock(m [][]string, currentPos Coord) bool {
 func isValid(currentPos Coord, stats Stats, symbol string, m [][]string) bool {
 	x := currentPos.posX + stats.directions[symbol].posX
 	y := currentPos.posY + stats.directions[symbol].posY
-	fmt.Println("[X, Y]: ", x, y)
-	fmt.Println(stats.end.posX, stats.end.posY)
+	// fmt.Println("[X, Y]: ", x, y)
+	// fmt.Println(stats.end.posX, stats.end.posY)
 	if x >= 0 && x <= stats.end.posX && y >= 0 && y <= stats.end.posY {
 		if isNumber(m, x, y) {
-			fmt.Println("ISVALID")
-			fmt.Println("Matrix[x,y]: ", m[x][y])
+			// fmt.Println("ISVALID")
+			// fmt.Println("Matrix[x,y]: ", m[x][y])
 			return true
 		}
 
 	}
-	fmt.Println("IS_NOT_VALID")
+	//fmt.Println("IS_NOT_VALID")
 
 	return false
 }
@@ -234,7 +260,7 @@ func isNumber(m [][]string, x, y int) bool {
 		return false
 	}
 
-	fmt.Println("isNUMBER")
+	//fmt.Println("isNUMBER")
 
 	return true
 
@@ -249,7 +275,7 @@ func count(path []string, symbol string, index int) int {
 		count++
 	}
 
-	fmt.Println("count: ", count)
+	//fmt.Println("count: ", count)
 	return count
 }
 
@@ -260,7 +286,7 @@ func random(symbol *string) {
 	n, err := rand.Int(rand.Reader, rangeSize)
 	option := int(n.Int64())
 	if err != nil {
-		fmt.Println("Error generating random number:", err)
+		//fmt.Println("Error generating random number:", err)
 		return
 	}
 
